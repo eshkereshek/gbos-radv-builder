@@ -1,0 +1,30 @@
+name: Build RADV Android Vulkan HAL
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [ main ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Build RADV Vulkan HAL
+        run: |
+          mkdir -p out
+          chmod +x build.sh patch_mesa.py
+          ./build.sh "$(pwd)/out"
+          sudo chown -R $USER:$USER out/
+          ls -lh out/
+          sha256sum out/vulkan.radv.so
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: vulkan.radv.so
+          path: out/vulkan.radv.so
+          if-no-files-found: error
+
